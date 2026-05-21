@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareMate AI</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+          "lucide-react": "https://esm.sh/lucide-react@0.292.0"
+        }
+      }
+    </script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body className="bg-gray-100">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        // Import สิ่งที่จำเป็น
+        import React, { useState } from 'react';
+        import { createRoot } from 'react-dom/client';
+        
+        // Import ไอคอนทั้งหมดที่ใช้ในแอปจากโค้ดเดิมของคุณ
+        import { 
+          Home, PhoneCall, Users, Map, 
+          Activity, Heart, ShieldCheck, 
+          Calendar, Star, ChevronRight,
+          Mic, Play, CheckCircle2, Check, AlertTriangle, Sparkles,
+          Search, TrendingUp, Clock, AlertOctagon, User, Settings, Bell, ChevronLeft, ToggleRight,
+          Bot, Utensils, Stethoscope, ExternalLink, Plus, Pill,
+          HeartPulse, Soup, Fish, ShoppingBag, Info
+        } from 'lucide-react';
+
+
+        
+const App = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center font-sans text-gray-900">
+      {/* Mobile Frame Container */}
+      <div className="w-full max-w-md bg-slate-50 h-[100dvh] shadow-2xl relative flex flex-col overflow-hidden">
+        
+        {/* Header / Top Bar - Compact (pt-4 pb-2) */}
+        {(activeTab === 'dashboard' || activeTab === 'dashboard_unwell') && (
+          <div className="bg-white px-6 pt-4 pb-2 shadow-sm z-10 flex justify-between items-center rounded-b-3xl shrink-0 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <h1 className="font-bold text-xl text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-600 tracking-tight">
+                CareMate AI
+              </h1>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setActiveTab('manage_elders')} className="w-9 h-9 bg-white border border-gray-100 shadow-sm rounded-full flex items-center justify-center hover:bg-gray-50 transition active:scale-95">
+                <Plus size={18} className="text-gray-600" />
+              </button>
+              <div className="relative">
+                <button onClick={() => setActiveTab('notifications')} className="w-9 h-9 bg-white border border-gray-100 shadow-sm rounded-full flex items-center justify-center hover:bg-gray-200 transition active:scale-95">
+                  <Bell size={18} className="text-gray-600" />
+                </button>
+                <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Area - Scrollable */}
+        <div className={`flex-1 overflow-y-auto ${(activeTab === 'elderly_home' || activeTab === 'elderly_med_detail' || activeTab === 'elderly_home_unwell' || activeTab === 'manage_elders') ? 'pb-0' : 'pb-24'} [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${(activeTab !== 'dashboard' && activeTab !== 'dashboard_unwell') ? 'pt-4' : ''}`}>
+          {activeTab === 'dashboard' && <DashboardView onDetailClick={() => setActiveTab('insight_detail')} onBookClick={() => setActiveTab('carenav')} onNutritionClick={() => setActiveTab('nutrition')} onMedicationClick={() => setActiveTab('medication')} />}
+          {activeTab === 'dashboard_unwell' && <DashboardUnwellView onDetailClick={() => setActiveTab('insight_detail')} onBookClick={() => setActiveTab('carenav')} onNutritionClick={() => setActiveTab('nutrition')} onMedicationClick={() => setActiveTab('medication')} />}
+          {activeTab === 'insight_detail' && <InsightDetailView onBack={() => setActiveTab('dashboard')} />}
+          {activeTab === 'carenav' && <CareNavView onBack={() => setActiveTab('dashboard')} />}
+          {activeTab === 'call' && <CallCheckInView />}
+          {activeTab === 'community' && <CommunityView />}
+          {activeTab === 'assistant' && <AssistantView onNutritionClick={() => setActiveTab('nutrition')} />}
+          {activeTab === 'profile' && <ProfileView onSettingsClick={() => setActiveTab('role_switch')} onLogoutClick={() => setActiveTab('dashboard_unwell')} />}
+          {activeTab === 'role_switch' && <RoleSwitchView onBack={() => setActiveTab('profile')} onSave={(role) => setActiveTab(role === 'caregiver' ? 'profile' : 'elderly_home')} />}
+          {activeTab === 'elderly_home' && <ElderlyHomeView onSettingsClick={() => setActiveTab('role_switch')} onMedDetailClick={() => setActiveTab('elderly_med_detail')} />}
+          {activeTab === 'elderly_home_unwell' && <ElderlyHomeUnwellView onSettingsClick={() => setActiveTab('role_switch')} />}
+          {activeTab === 'elderly_med_detail' && <ElderlyMedDetailView onBack={() => setActiveTab('elderly_home')} />}
+          {activeTab === 'nutrition' && <NutritionView onBack={() => setActiveTab('dashboard')} />}
+          {activeTab === 'medication' && <MedicationSettingsView onBack={() => setActiveTab('dashboard')} />}
+          {activeTab === 'notifications' && <NotificationsView />}
+          {activeTab === 'manage_elders' && <ManageEldersView onBack={() => setActiveTab('dashboard')} />}
+        </div>
+
+        {/* Bottom Navigation */}
+        {(activeTab !== 'elderly_home' && activeTab !== 'elderly_med_detail' && activeTab !== 'elderly_home_unwell' && activeTab !== 'manage_elders') && (
+          <div className="absolute bottom-0 w-full bg-white border-t border-gray-100 px-4 py-4 pb-8 sm:pb-6 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-20">
+            <div className="flex justify-between items-center">
+              <NavItem 
+                icon={<Home size={24} />} 
+                label="Home" 
+                isActive={activeTab === 'dashboard' || activeTab === 'dashboard_unwell'} 
+                onClick={() => setActiveTab('dashboard')} 
+              />
+              <NavItem 
+                icon={<PhoneCall size={24} />} 
+                label="AI Call" 
+                isActive={activeTab === 'call'} 
+                onClick={() => setActiveTab('call')} 
+              />
+              <NavItem 
+                icon={<Users size={24} />} 
+                label="Community" 
+                isActive={activeTab === 'community'} 
+                onClick={() => setActiveTab('community')} 
+              />
+              <NavItem 
+                icon={<Bot size={24} />} 
+                label="Assistant" 
+                isActive={activeTab === 'assistant'} 
+                onClick={() => setActiveTab('assistant')} 
+              />
+              <NavItem 
+                icon={<User size={24} />} 
+                label="Profile" 
+                isActive={activeTab === 'profile'} 
+                onClick={() => setActiveTab('profile')} 
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- View Components ---
+
+const DashboardView = ({ onDetailClick, onBookClick, onNutritionClick, onMedicationClick }) => (
+  <div className="px-5 pt-2 pb-5 space-y-5 animate-fade-in">
+    
+    {/* Hero Section: AI Insight Analysis */}
+    <div className="bg-gradient-to-bl from-blue-400 via-blue-50 to-[#f8fafc] rounded-3xl p-5 shadow-md relative overflow-hidden border border-blue-50">
+      <div className="absolute -top-4 -right-4 p-4 opacity-[0.03] pointer-events-none transform rotate-12 text-blue-900">
+        <Heart size={140} />
+      </div>
+
+      <div className="relative z-10">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">สถานะคุณแม่วันนี้</h2>
+            <div className="flex items-center gap-2 mt-1 mb-4">
+              <span className="text-3xl font-bold tracking-tight text-gray-800">อารมณ์ดี</span>
+              <span className="text-2xl animate-bounce">😊</span>
+            </div>
+          </div>
+          
+          <button onClick={onDetailClick} className="bg-white/80 backdrop-blur-sm text-blue-600 text-[10px] font-bold py-1.5 px-3 rounded-full transition flex items-center gap-1 shadow-sm border border-white/50 hover:bg-white">
+            รายละเอียด <ChevronRight size={12} />
+          </button>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="w-20 h-20 shrink-0 flex items-center justify-center relative">
+            <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 drop-shadow-sm">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#ffe4ec" strokeWidth="8" />
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#ff5487" strokeWidth="8" strokeDasharray="263.8" strokeDashoffset="65.9" strokeLinecap="round" />
+              <circle cx="50" cy="50" r="30" fill="none" stroke="#d1fae5" strokeWidth="8" />
+              <circle cx="50" cy="50" r="30" fill="none" stroke="#05d6a0" strokeWidth="8" strokeDasharray="188.4" strokeDashoffset="37.6" strokeLinecap="round" />
+              <circle cx="50" cy="50" r="18" fill="none" stroke="#ede9fe" strokeWidth="8" />
+              <circle cx="50" cy="50" r="18" fill="none" stroke="#8b5cf6" strokeWidth="8" strokeDasharray="113.1" strokeDashoffset="45.2" strokeLinecap="round" />
+            </svg>
+          </div>
+          
+          <div className="flex-1 bg-white/60 backdrop-blur-md rounded-2xl p-3 border border-white/40 shadow-sm min-h-[72px] flex flex-col justify-center">
+            <p className="text-[11px] text-gray-700 leading-relaxed font-medium">
+              "วันนี้อารมณ์ดีขึ้น <span className="text-blue-600 font-bold">15%</span> มีการพูดถึงหลานบ่อยครั้ง แนะนำให้โทรหาหรือวิดีโอคอลเย็นนี้"
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Section: การทานยา */}
+    <div>
+      <div className="flex justify-between items-end mb-1 px-1">
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">การทานยา</h3>
+        <button onClick={onMedicationClick} className="text-[10px] font-bold text-blue-500 flex items-center hover:underline">
+          เพิ่มเติม <ChevronRight size={10} className="ml-0.5" />
+        </button>
+      </div>
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex h-[68px]">
+        <div className="flex-1 w-1/2 bg-green-100 px-3 py-2 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 shadow-sm shrink-0">
+            <Check size={18} strokeWidth={3} />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <p className="text-[10px] text-gray-500 font-bold tracking-tight whitespace-nowrap truncate">ครั้งก่อน : มื้อเช้า</p>
+            <h4 className="text-lg font-extrabold text-green-600 leading-none mt-1 truncate">เรียบร้อย</h4>
+          </div>
+        </div>
+
+        <div className="w-[1px] bg-gray-50 self-stretch shrink-0"></div>
+
+        <div className="flex-1 w-1/2 px-3 py-2 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shadow-sm shrink-0 border border-white">
+            <Clock size={18} />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <p className="text-[10px] text-gray-500 font-bold tracking-tight whitespace-nowrap truncate">ถัดไป : มื้อเที่ยง</p>
+            <h4 className="text-lg text-gray-800 leading-none font-extrabold mt-1 truncate">
+              12:30 <span className="text-[10px] font-bold ml-0.5 text-gray-400">น.</span>
+            </h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Section: เมนูแนะนำ */}
+    <div>
+      <div className="flex justify-between items-end mb-1 px-1">
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">เมนูแนะนำ</h3>
+        <button onClick={onNutritionClick} className="text-[10px] font-bold text-blue-500 flex items-center hover:underline">
+          เพิ่มเติม <ChevronRight size={10} className="ml-0.5" />
+        </button>
+      </div>
+      <div className="bg-white rounded-3xl h-[88px] border border-gray-100 relative overflow-hidden shadow-sm group cursor-pointer">
+        <img 
+          src="https://res.cloudinary.com/dsbnkeqki/image/upload/q_auto/f_auto/v1779068039/Gemini_Generated_Image_e2msfee2msfee23ms_x60wcg.png" 
+          alt="เมนูแนะนำ" 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+          onError={(e) => {
+            e.target.onerror = null; 
+            e.target.src = 'https://via.placeholder.com/800x175?text=Recommended+Menu'; 
+          }}
+        />
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+        </div>
+      </div>
+    </div>
+
+    {/* Upcoming Section */}
+    <div>
+      <div className="flex justify-between items-end mb-1 px-1">
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">นัดหมายที่กำลังมาถึง</h3>
+        <button className="text-[10px] font-bold text-blue-500 flex items-center hover:underline">
+          เพิ่มเติม <ChevronRight size={10} className="ml-0.5" />
+        </button>
+      </div>
+      <div className="bg-white p-3.5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-3 hover:border-blue-100 transition-colors cursor-pointer">
+        <div className="w-12 h-12 rounded-2xl bg-blue-50 flex flex-col items-center justify-center text-blue-600 shrink-0 border border-blue-100/50">
+          <span className="text-base font-bold leading-none">29</span>
+          <span className="text-[9px] font-bold mt-1 text-blue-400 uppercase">พ.ค.</span>
+        </div>
+        <div className="flex-1">
+          <h4 className="font-bold text-gray-800 text-sm">ตรวจสุขภาพประจำปี</h4>
+          <p className="text-[10px] text-gray-400 font-medium mt-0.5 flex items-center gap-1">
+            <Map size={10} /> โรงพยาบาลรามาธิบดี
+          </p>
+        </div>
+        
+        <button 
+          onClick={(e) => { e.stopPropagation(); onBookClick && onBookClick(); }}
+          className="bg-[#015DAD] text-white border border-blue-200 px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 hover:bg-[#014F95] transition shadow-sm shrink-0"
+        >
+          <span className="text-[11px] font-bold leading-none whitespace-nowrap">
+             จองผู้ช่วย
+          </span>
+          <ChevronRight size={14} strokeWidth={3} className="text-white/90 shrink-0" />
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// --- New Dashboard Unwell View (Caregiver perspective) ---
+const DashboardUnwellView = ({ onDetailClick, onBookClick, onNutritionClick, onMedicationClick }) => (
+  <div className="px-5 pt-2 pb-5 space-y-5 animate-fade-in">
+    
+    {/* Hero Section: AI Insight Analysis (Warning Theme) */}
+    <div className="bg-gradient-to-bl from-red-400 via-red-50 to-[#fff5f5] rounded-3xl p-5 shadow-md relative overflow-hidden border border-red-100">
+      <div className="absolute -top-4 -right-4 p-4 opacity-[0.03] pointer-events-none transform rotate-12 text-red-900">
+        <Activity size={140} />
+      </div>
+
+      <div className="relative z-10">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">สถานะคุณแม่วันนี้</h2>
+            <div className="flex items-center gap-2 mt-1 mb-4">
+              <span className="text-3xl font-bold tracking-tight text-red-600">รู้สึกไม่สบาย</span>
+              <span className="text-2xl animate-pulse">🤒</span>
+            </div>
+          </div>
+          
+          <button onClick={onDetailClick} className="bg-white/80 backdrop-blur-sm text-red-600 text-[10px] font-bold py-1.5 px-3 rounded-full transition flex items-center gap-1 shadow-sm border border-red-200 hover:bg-white">
+            รายละเอียด <ChevronRight size={12} />
+          </button>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="w-20 h-20 shrink-0 flex items-center justify-center relative">
+            <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 drop-shadow-sm">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#ffe4ec" strokeWidth="8" />
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#ff5487" strokeWidth="8" strokeDasharray="263.8" strokeDashoffset="158.2" strokeLinecap="round" />
+              <circle cx="50" cy="50" r="30" fill="none" stroke="#d1fae5" strokeWidth="8" />
+              <circle cx="50" cy="50" r="30" fill="none" stroke="#05d6a0" strokeWidth="8" strokeDasharray="188.4" strokeDashoffset="131.8" strokeLinecap="round" />
+              <circle cx="50" cy="50" r="18" fill="none" stroke="#ede9fe" strokeWidth="8" />
+              <circle cx="50" cy="50" r="18" fill="none" stroke="#8b5cf6" strokeWidth="8" strokeDasharray="113.1" strokeDashoffset="90.4" strokeLinecap="round" />
+            </svg>
+          </div>
+          
+          <div className="flex-1 bg-white/60 backdrop-blur-md rounded-2xl p-3 border border-red-100 shadow-sm min-h-[72px] flex flex-col justify-center">
+            <p className="text-[11px] text-gray-700 leading-relaxed font-medium">
+              "เสียงอ่อนเพลียและบ่นปวดหัว <span className="text-red-600 font-bold">สุขภาพกายลดลง 30%</span> แนะนำให้ดูแลอย่างใกล้ชิดและปรึกษาแพทย์"
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* MorDee Recommendation Banner */}
+    <button className="relative w-full h-24 bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl shadow-sm border border-red-100 overflow-hidden flex items-center text-left hover:shadow-md active:scale-[0.99] transition">
+      
+      {/* Image */}
+      <img
+        src="https://res.cloudinary.com/dsbnkeqki/image/upload/q_auto/f_auto/v1779164161/Picture7_oh1jqg.png"
+        alt="ปรึกษาแพทย์ด่วน"
+        className="absolute left-0 top-0 w-28 h-full object-cover"
+      />
+
+      {/* Content */}
+      <div className="pl-32 pr-10 flex-1 min-w-0 relative z-10">
+        <div className="flex items-center gap-2 min-w-0">
+          <h4 className="font-bold text-red-900 truncate">
+            ปรึกษาแพทย์ แอพหมอดี
+          </h4>
+
+          <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+            แนะนำ
+          </span>
+        </div>
+
+        <p className="text-xs text-red-600 mt-1 truncate">
+          จากอาการไม่สบาย<br />แนะนำพบแพทย์เพื่อประเมินอาการ
+        </p>
+
+      </div>
+
+      <ChevronRight size={20} className="absolute right-4 text-red-300 shrink-0" />
+    </button>
+
+    {/* Section: การทานยา */}
+    <div>
+      <div className="flex justify-between items-end mb-1 px-1">
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">การทานยา</h3>
+        <button onClick={onMedicationClick} className="text-[10px] font-bold text-blue-500 flex items-center hover:underline">
+          เพิ่มเติม <ChevronRight size={10} className="ml-0.5" />
+        </button>
+      </div>
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex h-[68px]">
+        <div className="flex-1 w-1/2 bg-green-100 px-3 py-2 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 shadow-sm shrink-0">
+            <Check size={18} strokeWidth={3} />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <p className="text-[10px] text-gray-500 font-bold tracking-tight whitespace-nowrap truncate">ครั้งก่อน : มื้อเช้า</p>
+            <h4 className="text-lg font-extrabold text-green-600 leading-none mt-1 truncate">เรียบร้อย</h4>
+          </div>
+        </div>
+
+        <div className="w-[1px] bg-gray-50 self-stretch shrink-0"></div>
+
+        <div className="flex-1 w-1/2 px-3 py-2 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shadow-sm shrink-0 border border-white">
+            <Clock size={18} />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <p className="text-[10px] text-gray-500 font-bold tracking-tight whitespace-nowrap truncate">ถัดไป : มื้อเที่ยง</p>
+            <h4 className="text-lg text-gray-800 leading-none font-extrabold mt-1 truncate">
+              12:30 <span className="text-[10px] font-bold ml-0.5 text-gray-400">น.</span>
+            </h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Section: เมนูแนะนำ */}
+    <div>
+      <div className="flex justify-between items-end mb-1 px-1">
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">เมนูแนะนำ</h3>
+        <button onClick={onNutritionClick} className="text-[10px] font-bold text-blue-500 flex items-center hover:underline">
+          เพิ่มเติม <ChevronRight size={10} className="ml-0.5" />
+        </button>
+      </div>
+      <div className="bg-white rounded-3xl h-[88px] border border-gray-100 relative overflow-hidden shadow-sm group cursor-pointer">
+        <img 
+          src="https://res.cloudinary.com/dsbnkeqki/image/upload/q_auto/f_auto/v1779068039/Gemini_Generated_Image_e2msfee2msfee23ms_x60wcg.png" 
+          alt="เมนูแนะนำ" 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+          onError={(e) => {
+            e.target.onerror = null; 
+            e.target.src = 'https://via.placeholder.com/800x175?text=Recommended+Menu'; 
+          }}
+        />
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+        </div>
+      </div>
+    </div>
+
+    {/* Upcoming Section */}
+    <div>
+      <div className="flex justify-between items-end mb-1 px-1">
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">นัดหมายที่กำลังมาถึง</h3>
+        <button className="text-[10px] font-bold text-blue-500 flex items-center hover:underline">
+          เพิ่มเติม <ChevronRight size={10} className="ml-0.5" />
+        </button>
+      </div>
+      <div className="bg-white p-3.5 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-3 hover:border-blue-100 transition-colors cursor-pointer">
+        <div className="w-12 h-12 rounded-2xl bg-blue-50 flex flex-col items-center justify-center text-blue-600 shrink-0 border border-blue-100/50">
+          <span className="text-base font-bold leading-none">29</span>
+          <span className="text-[9px] font-bold mt-1 text-blue-400 uppercase">พ.ค.</span>
+        </div>
+        <div className="flex-1">
+          <h4 className="font-bold text-gray-800 text-sm">ตรวจสุขภาพประจำปี</h4>
+          <p className="text-[10px] text-gray-400 font-medium mt-0.5 flex items-center gap-1">
+            <Map size={10} /> โรงพยาบาลรามาธิบดี
+          </p>
+        </div>
+        
+        <button 
+          onClick={(e) => { e.stopPropagation(); onBookClick && onBookClick(); }}
+          className="bg-[#015DAD] text-white border border-blue-200 px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 hover:bg-[#014F95] transition shadow-sm shrink-0"
+        >
+          <span className="text-[11px] font-bold leading-none whitespace-nowrap">
+             จองผู้ช่วย
+          </span>
+          <ChevronRight size={14} strokeWidth={3} className="text-white/90 shrink-0" />
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+
+const CallCheckInView = () => (
+  <div className="p-5 space-y-6 animate-fade-in">
+    <div className="text-center mb-6 pt-4">
+      <h2 className="text-2xl font-bold text-gray-800">AI Call Check-in</h2>
+      <p className="text-gray-500 text-sm mt-1">ระบบคุยอัตโนมัติและวิเคราะห์โทนเสียง</p>
+    </div>
+
+    <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 flex flex-col items-center">
+      <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-green-100 to-blue-100 flex items-center justify-center relative mb-6 animate-pulse">
+        <div className="absolute w-full h-full rounded-full border-4 border-white"></div>
+        <div className="w-24 h-24 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center shadow-lg">
+          <Mic size={40} className="text-white" />
+        </div>
+      </div>
+      <h3 className="text-lg font-bold text-gray-800">น้อง Care (AI)</h3>
+      <p className="text-sm text-green-500 font-medium mb-6">กำลังสแตนด์บาย...</p>
+      
+      <button className="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold flex justify-center items-center gap-2 hover:bg-gray-800 transition shadow-md">
+        <PhoneCall size={20} />
+        ให้ AI โทรออกตอนนี้เลย
+      </button>
+    </div>
+
+    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          <Clock size={18} className="text-blue-500" />
+          <h3 className="font-bold text-gray-800">ตั้งค่าโทรอัตโนมัติ</h3>
+        </div>
+        <ToggleRight size={28} className="text-green-500" />
+      </div>
+      
+      <div className="flex gap-3">
+        <div className="flex-1 bg-gray-50 p-3 rounded-xl border border-gray-100">
+          <p className="text-[10px] text-gray-500 mb-1">ความถี่</p>
+          <p className="text-sm font-bold text-gray-800">ทุกวัน</p>
+        </div>
+        <div className="flex-1 bg-gray-50 p-3 rounded-xl border border-gray-100">
+          <p className="text-[10px] text-gray-500 mb-1">เวลา</p>
+          <p className="text-sm font-bold text-gray-800">09:00 , 17:00</p>
+        </div>
+      </div>
+      <p className="text-[11px] text-gray-400 mt-3 flex items-center gap-1">
+        *AI จะเป็นฝ่ายโทรหาผู้สูงอายุตามเวลาที่ตั้งไว้เพื่อเช็กอิน
+      </p>
+    </div>
+
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-bold text-gray-800">ประวัติการวิเคราะห์เสียงล่าสุด</h3>
+        <span className="text-xs text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded-lg flex items-center gap-1">
+          <Sparkles size={12}/> AI Analysis
+        </span>
+      </div>
+      
+      <div className="space-y-3">
+        {[
+          { date: 'วันนี้, 09:00 น.', status: 'อารมณ์ดี', stress: 'ต่ำ', icon: '😊' },
+          { date: 'เมื่อวาน, 16:30 น.', status: 'เหนื่อยล้าเล็กน้อย', stress: 'ปานกลาง', icon: '🥱' }
+        ].map((item, i) => (
+          <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-xl">
+                {item.icon}
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-gray-800">{item.status}</h4>
+                <p className="text-xs text-gray-400">{item.date}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] text-gray-500">ระดับความเครียด</p>
+              <p className={`text-xs font-bold ${item.stress === 'ต่ำ' ? 'text-green-500' : 'text-yellow-500'}`}>
+                {item.stress}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const CommunityView = () => (
+  <div className="p-5 space-y-6 animate-fade-in">
+    <div className="flex justify-between items-end mb-2">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800">Care Community</h2>
+        <p className="text-gray-500 text-sm mt-1">แลกเปลี่ยนประสบการณ์ดูแลผู้สูงอายุ</p>
+      </div>
+    </div>
+
+    {/* Community Highlight Banner */}
+    <div className="bg-white rounded-3xl h-[88px] relative overflow-hidden shadow-sm group cursor-pointer border border-gray-100">
+      <img 
+        src="https://res.cloudinary.com/dsbnkeqki/image/upload/q_auto/f_auto/v1779085222/3f7ae791-a2aa-4b2c-bac5-a2021a1fbad4_k9c2ed.jpg" 
+        alt="Community Highlight" 
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+        onError={(e) => {
+          e.target.onerror = null; 
+          e.target.src = 'https://via.placeholder.com/800x280?text=Community+Highlight'; 
+        }}
+      />
+      {/* Overlay pagination dots */}
+      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">
+        <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm"></div>
+        <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+        <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+      </div>
+    </div>
+
+    <div className="relative">
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+      <input 
+        type="text" 
+        placeholder="ค้นหาหัวข้อ, โรค, หรือประสบการณ์..." 
+        className="w-full bg-white border border-gray-200 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-blue-500 shadow-sm"
+      />
+    </div>
+
+    <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 pb-7 rounded-2xl border border-orange-100 flex items-start gap-3 relative overflow-hidden">
+      <TrendingUp className="text-orange-500 shrink-0 mt-1 z-10" size={20} />
+      <div className="z-10">
+        <span className="text-[10px] font-bold text-orange-600 block mb-1">🔥 ประเด็นฮิตสัปดาห์นี้</span>
+        <h4 className="font-bold text-gray-800 text-sm">แชร์เทคนิครับมือภาวะ "Sundowning" สับสนช่วงเย็น</h4>
+        <p className="text-[11px] text-gray-500 mt-1">มีการพูดคุย 1.2k ครั้งในสัปดาห์นี้</p>
+      </div>
+      <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none">
+        <TrendingUp size={80} />
+      </div>
+      <div className="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1 z-20">
+        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 shadow-sm"></div>
+        <div className="w-1.5 h-1.5 rounded-full bg-orange-300/50"></div>
+        <div className="w-1.5 h-1.5 rounded-full bg-orange-300/50"></div>
+      </div>
+    </div>
+
+    <div className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2 -mx-5 px-5">
+      <button className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-medium shrink-0">ทั้งหมด</button>
+      <button className="px-4 py-2 bg-white text-gray-600 rounded-full text-sm font-medium border border-gray-200 shrink-0 flex items-center gap-1">
+        <Sparkles size={14} className="text-blue-500"/>
+        AI Matched
+      </button>
+      <button className="px-4 py-2 bg-white text-gray-600 rounded-full text-sm font-medium border border-gray-200 shrink-0">พ่อแม่อยู่คนเดียว</button>
+      <button className="px-4 py-2 bg-white text-gray-600 rounded-full text-sm font-medium border border-gray-200 shrink-0">ดูแลทางไกล</button>
+      <button className="px-4 py-2 bg-white text-gray-600 rounded-full text-sm font-medium border border-gray-200 shrink-0">เริ่มหลงลืม</button>
+      <button className="px-4 py-2 bg-white text-gray-600 rounded-full text-sm font-medium border border-gray-200 shrink-0">ดูแลผู้สูงอายุสองคน</button>
+    </div>
+
+    <div className="space-y-4">
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 font-bold">
+            P
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-gray-800">พิมพ์ใจ รักษา</h4>
+            <p className="text-[10px] text-gray-400">ดูแลผู้ป่วยอัลไซเมอร์ • 2 ชม. ที่แล้ว</p>
+          </div>
+          <div className="ml-auto">
+             <span className="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-600 rounded-md text-[10px] font-bold">
+              <ShieldCheck size={12} />
+              AI Verified Fact
+            </span>
+          </div>
+        </div>
+        <p className="text-sm text-gray-700 leading-relaxed mb-3">
+          แชร์เทคนิคชวนคุณแม่คุยตอนที่ท่านจำเรื่องปัจจุบันไม่ได้ค่ะ เราใช้วิธีเปิดเพลงสุนทราภรณ์ยุคเก่าๆ ให้ฟัง...
+        </p>
+        <div className="flex gap-4 text-xs text-gray-500 font-medium">
+          <button className="flex items-center gap-1"><Heart size={16} /> 24</button>
+          <button className="flex items-center gap-1"><Users size={16} /> 5 ความคิดเห็น</button>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-r from-blue-50 to-green-50 p-5 rounded-2xl border border-blue-100 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-2">
+          <Sparkles size={40} className="text-blue-500 opacity-10" />
+        </div>
+        <span className="text-xs font-bold text-blue-600 mb-2 block">✨ AI แนะนำกลุ่มนี้สำหรับคุณ</span>
+        <h4 className="font-bold text-gray-800 mb-1">กลุ่มผู้ดูแลเบาหวานและการคุมอาหาร</h4>
+        <p className="text-xs text-gray-600 mb-4">มีผู้ดูแลที่มีลักษณะคล้ายคุณ 124 คนในกลุ่มนี้</p>
+        <button className="w-full bg-white text-blue-600 border border-blue-200 py-2 rounded-xl text-sm font-bold hover:bg-blue-50 transition">
+          เข้าร่วมกลุ่ม
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const AssistantView = ({ onNutritionClick }) => {
+  const [currentView, setCurrentView] = useState('menu');
+
+  if (currentView === 'carenav') return <CareNavView onBack={() => setCurrentView('menu')} />;
+
+  return (
+    <div className="p-5 space-y-6 animate-fade-in pb-10">
+      <div className="pt-4 mb-2">
+        <h2 className="text-2xl font-bold text-gray-800">ผู้ช่วยส่วนตัว</h2>
+        <p className="text-gray-500 text-sm mt-1">บริการเสริมเพื่อสุขภาพและการดูแล</p>
+      </div>
+
+      <div className="space-y-4">
+        <button onClick={onNutritionClick} className="relative w-full h-24 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex items-center text-left hover:bg-gray-50 hover:shadow-md active:scale-[0.99] transition">
+          
+          <img
+            src="https://res.cloudinary.com/dsbnkeqki/image/upload/q_auto/f_auto/v1779121513/Picture4_yudqfv.png"
+            alt="โภชนาการแนะนำ"
+            className="absolute left-0 top-0 w-28 h-full object-cover"
+          />
+
+          {/* ไล่ขาวทับรูปให้เชื่อมกับข้อความ */}
+          <div className="absolute left-20 top-0 h-full w-20 bg-gradient-to-r from-transparent to-white-80" />
+
+          <div className="pl-32 pr-10 flex-1 min-w-0 relative z-10">
+            <h4 className="font-bold text-gray-800 truncate">
+              โภชนาการแนะนำ
+            </h4>
+            <p className="text-xs text-gray-500 mt-1 truncate">
+              AI จัดตารางอาหารตามโรคประจำตัว
+            </p>
+          </div>
+
+          <ChevronRight size={20} className="absolute right-4 text-gray-300 shrink-0" />
+        </button>
+
+        <button className="relative w-full h-24 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex items-center text-left hover:bg-gray-50 hover:shadow-md active:scale-[0.99] transition">
+          
+          <img
+            src="https://res.cloudinary.com/dsbnkeqki/image/upload/q_auto/f_auto/v1779121513/Picture3_khy5j7.png"
+            alt="ปรึกษาแพทย์ (หมอดี)"
+            className="absolute left-0 top-0 w-28 h-full object-cover"
+          />
+
+          {/* ไล่ขาวทับรูปให้เชื่อมกับข้อความ */}
+          <div className="absolute left-20 top-0 h-full w-20 bg-gradient-to-r from-transparent to-white-80" />
+
+          <div className="pl-32 pr-10 flex-1 min-w-0 relative z-10">
+            <h4 className="font-bold text-gray-800 truncate">
+              ปรึกษาแพทย์ (หมอดี)
+            </h4>
+            <p className="text-xs text-gray-500 mt-1 truncate">
+              พบหมอออนไลน์ ส่งยาถึงหน้าบ้าน
+            </p>
+          </div>
+
+          <ChevronRight size={20} className="absolute right-4 text-gray-300 shrink-0" />
+        </button>
+
+        <button onClick={() => setCurrentView('carenav')} className="relative w-full h-24 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex items-center text-left hover:bg-gray-50 hover:shadow-md active:scale-[0.99] transition">
+          
+          <img
+            src="https://res.cloudinary.com/dsbnkeqki/image/upload/q_auto/f_auto/v1779121513/Picture2_cjhf2w.png"
+            alt="Care Navigation"
+            className="absolute left-0 top-0 w-28 h-full object-cover"
+          />
+
+          {/* ไล่ขาวทับรูปให้เชื่อมกับข้อความ */}
+          <div className="absolute left-20 top-0 h-full w-20 bg-gradient-to-r from-transparent to-white-80" />
+
+          <div className="pl-32 pr-10 flex-1 min-w-0 relative z-10">
+            <h4 className="font-bold text-gray-800 truncate">
+              Care Navigation
+            </h4>
+            <p className="text-xs text-gray-500 mt-1 truncate">
+              บริการจัดหาผู้ดูแลและรถรับส่ง
+            </p>
+          </div>
+
+          <ChevronRight size={20} className="absolute right-4 text-gray-300 shrink-0" />
+        </button>
+
+
+      </div>
+    </div>
+  );
+};
+
+const CareNavView = ({ onBack }) => (
+  <div className="p-5 space-y-6 animate-fade-in">
+    <div className="bg-gradient-to-r from-[#23A45F] to-[#015DAD] -mx-5 -mt-5 px-5 pt-6 pb-8 rounded-b-[1.5rem] text-white shadow-sm relative overflow-hidden">
+      
+      {/* Decorative Heart */} 
+      <div className="absolute -top-4 -right-4 p-4 opacity-[0.03] pointer-events-none transform rotate-12 text-blue-900">
+        <Heart size={140} className="text-white"/>
+      </div>
+
+      <div className="relative z-10">
+        <button onClick={onBack} className="flex items-center gap-1 text-blue-100 hover:text-white mb-4 -ml-1 transition">
+          <ChevronLeft size={20} />
+          <span className="text-sm font-medium">ย้อนกลับ</span>
+        </button>
+
+        <h2 className="text-2xl font-bold mb-2">Care Navigation</h2>
+        <p className="text-blue-100 text-sm">บริการพาผู้สูงอายุไปโรงพยาบาลอย่างปลอดภัย</p>
+        
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl mt-6 flex gap-3 items-center">
+          <Map size={24} className="text-white" />
+          <div className="flex-1">
+            <p className="text-xs text-blue-200">จุดหมายถัดไป</p>
+            <p className="font-bold">รพ.รามาธิบดี (29 พ.ค.)</p>
+          </div>
+          <button className="bg-white text-blue-600 text-xs font-bold px-3 py-2 rounded-lg">
+            จัดการ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div className="pt-2">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-gray-800">ผู้ดูแลที่ AI คัดกรองให้คุณ</h3>
+        <Sparkles size={18} className="text-blue-500" />
+      </div>
+
+      <div className="space-y-4">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+          <div className="absolute top-0 right-0 bg-[#23A45F] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
+            Match 98%
+          </div>
+          <div className="flex gap-4">
+            <img src="https://placehold.co/100x100/e2e8f0/64748b?text=CG" alt="Caregiver" className="w-16 h-16 rounded-2xl object-cover" />
+            <div>
+              <h4 className="font-bold text-gray-800">พยาบาล สมหญิง</h4>
+              <div className="flex items-center gap-1 text-xs text-yellow-500 my-1">
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <span className="text-gray-400 ml-1">(45 รีวิว)</span>
+              </div>
+              <p className="text-[11px] text-gray-500">พูดภาษาอีสานได้ • ชำนาญการดูแลผู้ป่วยกระดูก</p>
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-gray-50 flex gap-2">
+            <button className="flex-1 bg-blue-50 text-gray-700 py-2 rounded-xl text-sm font-medium">ดูโปรไฟล์</button>
+            <button className="flex-1 bg-[#015DAD] text-white py-2 rounded-xl text-sm font-medium">จองคิว</button>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+          <div className="absolute top-0 right-0 bg-[#014F95] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
+            Match 92%
+          </div>
+          <div className="flex gap-4">
+            <img src="https://placehold.co/100x100/e2e8f0/64748b?text=CG2" alt="Caregiver" className="w-16 h-16 rounded-2xl object-cover" />
+            <div>
+              <h4 className="font-bold text-gray-800">ผู้ช่วยฯ ใจดี</h4>
+              <div className="flex items-center gap-1 text-xs text-yellow-500 my-1">
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <Star size={12} fill="currentColor" />
+                <span className="text-gray-400 ml-1">(28 รีวิว)</span>
+              </div>
+              <p className="text-[11px] text-gray-500">ใจเย็น ขับรถนิ่ม • เคยดูแลผู้ป่วยความดันสูง</p>
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-gray-50 flex gap-2">
+            <button className="flex-1 bg-blue-50 text-gray-700 py-2 rounded-xl text-sm font-medium">ดูโปรไฟล์</button>
+            <button className="flex-1 bg-[#015DAD] text-white py-2 rounded-xl text-sm font-medium">จองคิว</button>
+          </div>
+        </div>
+      </div>
+      
+      <button className="w-full mt-4 bg-white border-2 border-dashed border-gray-300 text-gray-500 py-4 rounded-2xl font-bold hover:bg-gray-50 transition">
+        + สร้างคำขอจัดหาผู้ดูแลใหม่
+      </button>
+    </div>
+  </div>
+);
+
+const ProfileView = ({ onSettingsClick, onLogoutClick }) => (
+  <div className="p-5 space-y-6 animate-fade-in pb-10">
+    <div className="pt-4">
+      <h2 className="text-2xl font-bold text-gray-800">โปรไฟล์</h2>
+    </div>
+
+    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+      <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold">
+        👩🏻
+      </div>
+      <div className="flex-1">
+        <h3 className="font-bold text-gray-800 text-lg">วาสนา ใจดี</h3>
+        <p className="text-xs text-gray-500">บัญชีลูกหลาน / ผู้ดูแลหลัก</p>
+        <span className="inline-block mt-2 px-2 py-1 bg-green-50 text-green-600 text-[10px] font-bold rounded-md border border-green-100">
+          ยืนยันตัวตนแล้ว
+        </span>
+      </div>
+      <ChevronRight className="text-gray-400" size={20} />
+    </div>
+
+    <div>
+      <h3 className="text-sm font-bold text-gray-500 mb-3 px-1">ข้อมูลผู้สูงอายุที่ดูแล</h3>
+      <div className="bg-gradient-to-r from-blue-50 to-green-50 p-5 rounded-2xl border border-blue-100 relative overflow-hidden">
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm border border-gray-100">
+            👵🏻
+          </div>
+          <div className="flex-1">
+            <h4 className="font-bold text-gray-800">คุณแม่สมศรี</h4>
+            <p className="text-xs text-gray-600 mt-1">อายุ 72 ปี • ความดันโลหิตสูง, เบาหวาน</p>
+          </div>
+          <button className="bg-white text-blue-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-200">
+            แก้ไข
+          </button>
+        </div>
+        <div className="absolute right-0 bottom-5 opacity-10 -mr-4 -mb-4">
+          <Heart size={80} />
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-sm font-bold text-gray-500 mb-3 px-1">การตั้งค่าทั่วไป</h3>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-4 border-b border-gray-50 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
+              <Bell size={16} />
+            </div>
+            <span className="text-sm font-medium text-gray-700">การแจ้งเตือนและเสียง</span>
+          </div>
+          <ChevronRight className="text-gray-400" size={18} />
+        </div>
+        <div className="p-4 border-b border-gray-50 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+              <ShieldCheck size={16} />
+            </div>
+            <span className="text-sm font-medium text-gray-700">สิทธิ์การเข้าถึงข้อมูล (PDPA)</span>
+          </div>
+          <ChevronRight className="text-gray-400" size={18} />
+        </div>
+        <div onClick={onSettingsClick} className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+              <Settings size={16} />
+            </div>
+            <span className="text-sm font-medium text-gray-700">ตั้งค่าบัญชี</span>
+          </div>
+          <ChevronRight className="text-gray-400" size={18} />
+        </div>
+      </div>
+    </div>
+    
+    <button onClick={onLogoutClick} className="w-full text-red-500 bg-red-50 py-3 rounded-2xl font-bold text-sm hover:bg-red-100 transition mt-4">
+      ออกจากระบบ
+    </button>
+  </div>
+);
+
+const RoleSwitchView = ({ onBack, onSave }) => {
+  const [selectedRole, setSelectedRole] = useState('caregiver');
+
+  return (
+    <div className="p-5 space-y-6 animate-fade-in pb-10">
+      <div className="pt-2 flex items-center gap-3 mb-6">
+        <button onClick={onBack} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95">
+          <ChevronLeft size={20} className="text-gray-600" />
+        </button>
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">ตั้งค่าบัญชี</h2>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-sm font-bold text-gray-500 mb-3 px-1">สลับมุมมองการใช้งาน</h3>
+        <div className="space-y-4">
+          <button 
+            onClick={() => setSelectedRole('elderly')}
+            className={`w-full p-5 rounded-2xl border-2 transition-all flex items-center gap-4 text-left ${selectedRole === 'elderly' ? 'border-blue-500 bg-blue-50' : 'border-gray-100 bg-white shadow-sm hover:bg-gray-50'}`}
+          >
+            <div className="text-4xl">👵🏻</div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-800 text-lg">สำหรับผู้สูงอายุ</h3>
+              <p className="text-xs text-gray-500 mt-1">ง่าย สะดวก ใช้งานง่าย</p>
+            </div>
+            {selectedRole === 'elderly' && <CheckCircle2 className="text-blue-500" size={24} />}
+          </button>
+
+          <button 
+            onClick={() => setSelectedRole('caregiver')}
+            className={`w-full p-5 rounded-2xl border-2 transition-all flex items-center gap-4 text-left ${selectedRole === 'caregiver' ? 'border-blue-500 bg-blue-50' : 'border-gray-100 bg-white shadow-sm hover:bg-gray-50'}`}
+          >
+            <div className="text-4xl">👩🏻</div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-800 text-lg">สำหรับผู้ดูแล</h3>
+              <p className="text-xs text-gray-500 mt-1">ดูสถิติและตั้งค่าแบบละเอียด</p>
+            </div>
+            {selectedRole === 'caregiver' && <CheckCircle2 className="text-blue-500" size={24} />}
+          </button>
+        </div>
+      </div>
+
+      <div className="pt-6">
+        <button 
+          onClick={() => onSave(selectedRole)}
+          className="w-full bg-[#015DAD] text-white font-bold py-4 rounded-2xl shadow-sm hover:bg-[#014F95] transition"
+        >
+          บันทึกการเปลี่ยนแปลง
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ElderlyHomeView = ({ onSettingsClick, onMedDetailClick }) => {
+  const [showPinPad, setShowPinPad] = useState(false);
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState(false);
+
+  const handlePinPress = (num) => {
+    if (pin.length < 4) {
+      const newPin = pin + num;
+      setPin(newPin);
+      setError(false);
+      
+      if (newPin.length === 4) {
+        // กำหนดรหัส PIN จำลองคือ 1234
+        if (newPin === '1234') {
+          setTimeout(() => {
+            setShowPinPad(false);
+            setPin('');
+            onSettingsClick();
+          }, 200);
+        } else {
+          setError(true);
+          setTimeout(() => setPin(''), 500); // ล้างรหัสถ้าใส่ผิด
+        }
+      }
+    }
+  };
+
+  const handleBackspace = () => {
+    setPin(pin.slice(0, -1));
+    setError(false);
+  };
+
+  // แสดงหน้าจอใส่ PIN
+  if (showPinPad) {
+    return (
+      <div className="px-5 py-8 space-y-6 animate-fade-in flex flex-col items-center justify-center min-h-[80vh]">
+        <div className="w-full relative">
+          <button onClick={() => { setShowPinPad(false); setPin(''); setError(false); }} className="absolute left-0 top-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95">
+            <ChevronLeft size={20} className="text-gray-600" />
+          </button>
+        </div>
+        
+        <div className="text-center mt-8 mb-4">
+          <div className="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+            <ShieldCheck size={32} />
+          </div>
+          <h2 className="text-2xl font-extrabold text-gray-800">ยืนยันตัวตน</h2>
+          <p className="text-gray-500 text-sm mt-2">กรุณาใส่รหัสผ่านผู้ดูแล เพื่อเข้าสู่การตั้งค่า<br/>(PIN: 1234)</p>
+        </div>
+
+        <div className="flex gap-4 justify-center mb-10">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className={`w-4 h-4 rounded-full transition-all duration-200 ${i < pin.length ? 'bg-blue-500 scale-110' : 'bg-gray-300'} ${error ? 'bg-red-500' : ''}`}></div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-3 gap-x-6 gap-y-4 max-w-[260px] mx-auto">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+            <button key={num} onClick={() => handlePinPress(num.toString())} className="w-16 h-16 bg-white rounded-full text-2xl font-bold text-gray-800 shadow-sm border border-gray-100 hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition">
+              {num}
+            </button>
+          ))}
+          <div className="w-16 h-16"></div>
+          <button onClick={() => handlePinPress('0')} className="w-16 h-16 bg-white rounded-full text-2xl font-bold text-gray-800 shadow-sm border border-gray-100 hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition">
+            0
+          </button>
+          <button onClick={handleBackspace} className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-gray-600 shadow-sm border border-gray-100 hover:bg-red-50 active:bg-red-100 active:scale-95 transition">
+            <ChevronLeft size={24} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // หน้าจอ Elderly Home ปกติ
+  return (
+    <div className="px-5 pb-8 space-y-6 animate-fade-in">
+      {/* Custom Header for Elderly */}
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-3xl shadow-sm border border-gray-100">
+            👵🏻
+          </div>
+          <div>
+            <p className="text-gray-500 font-bold text-sm">สวัสดีตอนเที่ยง</p>
+            <h2 className="text-xl font-extrabold text-gray-800">คุณแม่สมศรี</h2>
+          </div>
+        </div>
+        <button onClick={() => setShowPinPad(true)} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95">
+          <Settings size={18} className="text-gray-400" />
+        </button>
+      </div>
+
+      {/* Card 1: Pills */}
+      <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-500 shrink-0">
+            <Clock size={28} />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800 text-lg">กินยาครั้งถัดไป</h3>
+            <p className="text-green-600 font-extrabold text-3xl">12:30 น.</p>
+          </div>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-2xl mb-5 border border-gray-100">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-gray-700 font-bold">มียาทั้งหมด 2 เม็ด</span>
+            <button onClick={onMedDetailClick} className="text-blue-500 font-bold text-sm flex items-center hover:underline">
+              ดูรายละเอียดยา <ChevronRight size={16} />
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 text-yellow-400"><Pill size={22} /></div>
+            <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 text-green-400"><Pill size={22} /></div>
+          </div>
+        </div>
+        <button className="w-full bg-[#23A45F] text-white font-bold text-xl py-4 rounded-2xl shadow-sm hover:bg-green-600 transition flex justify-center items-center gap-2">
+          <CheckCircle2 size={24} />
+          ฉันกินยาแล้ว
+        </button>
+      </div>
+
+      {/* Card 2: AI Companion */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-[2rem] shadow-sm border border-blue-100">
+        <div className="flex items-center gap-4 mb-5">
+          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-sm text-blue-500 shrink-0">
+            <Mic size={32} />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800 text-xl">เพื่อนคุย AI</h3>
+            <p className="text-gray-600 font-medium text-sm mt-0.5 leading-tight">กดเพื่อคุยเมื่อเหงา หรือไม่สบายใจ</p>
+          </div>
+        </div>
+        <button className="w-full bg-[#015DAD] text-white font-bold text-lg py-4 rounded-2xl shadow-sm hover:bg-[#014F95] transition flex justify-center items-center gap-2">
+          <PhoneCall size={24} />
+          โทรหาน้อง Care
+        </button>
+      </div>
+
+      {/* Card 3: Emergency */}
+      <div className="bg-red-50 p-6 rounded-[2rem] border-2 border-red-100 shadow-sm">
+         <div className="text-center mb-5">
+            <div className="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse shadow-inner">
+               <AlertTriangle size={40} />
+            </div>
+            <h3 className="font-extrabold text-red-600 text-2xl">ปุ่มฉุกเฉิน</h3>
+            <p className="text-red-500 font-bold text-sm mt-1">กดเมื่อต้องการความช่วยเหลือทันที</p>
+            <p className="text-xs text-red-400 mt-2 font-medium">*ระบบจะแจ้งเตือนผู้ดูแลทันที</p>
+         </div>
+         <button className="w-full bg-red-500 text-white font-bold text-xl py-5 rounded-2xl shadow-lg hover:bg-red-600 transition active:scale-95 flex justify-center items-center gap-2">
+           <AlertOctagon size={28} />
+           ขอความช่วยเหลือ
+         </button>
+      </div>
+    </div>
+  );
+};
+
+const ElderlyMedDetailView = ({ onBack }) => {
+  return (
+    <div className="px-5 pb-8 space-y-6 animate-fade-in bg-slate-50 min-h-full">
+      {/* Header */}
+      <div className="pt-2 flex items-center gap-3 mb-6">
+        <button onClick={onBack} className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95 shrink-0">
+          <ChevronLeft size={28} className="text-gray-600" />
+        </button>
+        <div>
+          <h2 className="text-2xl font-extrabold text-gray-800">รายละเอียดยา</h2>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+        <div className="mb-8">
+          <h3 className="text-gray-500 font-bold text-lg mb-1">มื้อเที่ยง</h3>
+          <p className="text-green-600 font-extrabold text-4xl">12:30 น.</p>
+        </div>
+
+        <div className="space-y-4 mb-8">
+          {/* Med 1 */}
+          <div className="bg-yellow-50/50 p-4 rounded-3xl flex items-center gap-4 border border-yellow-100">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-yellow-400 shrink-0">
+              <Pill size={32} />
+            </div>
+            <div>
+              <h4 className="text-xl font-bold text-gray-800 mb-1">Vitamin C</h4>
+              <p className="text-gray-600 font-medium">1000 mg • 1 เม็ด</p>
+            </div>
+          </div>
+
+          {/* Med 2 */}
+          <div className="bg-green-50/50 p-4 rounded-3xl flex items-center gap-4 border border-green-100">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-green-400 shrink-0">
+              <Pill size={32} />
+            </div>
+            <div>
+              <h4 className="text-xl font-bold text-gray-800 mb-1">Calcium</h4>
+              <p className="text-gray-600 font-medium">600 mg • 1 เม็ด</p>
+            </div>
+          </div>
+        </div>
+
+        <button onClick={onBack} className="w-full bg-[#23A45F] text-white font-bold text-2xl py-5 rounded-2xl shadow-lg hover:bg-green-600 transition active:scale-95 flex justify-center items-center gap-3">
+          <CheckCircle2 size={32} />
+          ฉันกินยาแล้ว
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ElderlyHomeUnwellView = ({ onSettingsClick }) => {
+  const [showPinPad, setShowPinPad] = useState(false);
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState(false);
+
+  const handlePinPress = (num) => {
+    if (pin.length < 4) {
+      const newPin = pin + num;
+      setPin(newPin);
+      setError(false);
+      
+      if (newPin.length === 4) {
+        if (newPin === '1234') {
+          setTimeout(() => {
+            setShowPinPad(false);
+            setPin('');
+            onSettingsClick();
+          }, 200);
+        } else {
+          setError(true);
+          setTimeout(() => setPin(''), 500);
+        }
+      }
+    }
+  };
+
+  const handleBackspace = () => {
+    setPin(pin.slice(0, -1));
+    setError(false);
+  };
+
+  if (showPinPad) {
+    return (
+      <div className="px-5 py-8 space-y-6 animate-fade-in flex flex-col items-center justify-center min-h-[80vh]">
+        <div className="w-full relative">
+          <button onClick={() => { setShowPinPad(false); setPin(''); setError(false); }} className="absolute left-0 top-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95">
+            <ChevronLeft size={20} className="text-gray-600" />
+          </button>
+        </div>
+        
+        <div className="text-center mt-8 mb-4">
+          <div className="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+            <ShieldCheck size={32} />
+          </div>
+          <h2 className="text-2xl font-extrabold text-gray-800">ยืนยันตัวตน</h2>
+          <p className="text-gray-500 text-sm mt-2">กรุณาใส่รหัสผ่านผู้ดูแล เพื่อเข้าสู่การตั้งค่า<br/>(PIN: 1234)</p>
+        </div>
+
+        <div className="flex gap-4 justify-center mb-10">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className={`w-4 h-4 rounded-full transition-all duration-200 ${i < pin.length ? 'bg-blue-500 scale-110' : 'bg-gray-300'} ${error ? 'bg-red-500' : ''}`}></div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-3 gap-x-6 gap-y-4 max-w-[260px] mx-auto">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+            <button key={num} onClick={() => handlePinPress(num.toString())} className="w-16 h-16 bg-white rounded-full text-2xl font-bold text-gray-800 shadow-sm border border-gray-100 hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition">
+              {num}
+            </button>
+          ))}
+          <div className="w-16 h-16"></div>
+          <button onClick={() => handlePinPress('0')} className="w-16 h-16 bg-white rounded-full text-2xl font-bold text-gray-800 shadow-sm border border-gray-100 hover:bg-blue-50 active:bg-blue-100 active:scale-95 transition">
+            0
+          </button>
+          <button onClick={handleBackspace} className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-gray-600 shadow-sm border border-gray-100 hover:bg-red-50 active:bg-red-100 active:scale-95 transition">
+            <ChevronLeft size={24} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-5 pb-8 space-y-6 animate-fade-in bg-[#fff5f5] min-h-screen pt-4">
+      {/* Custom Header for Elderly */}
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-3xl shadow-sm border border-gray-100">
+            👵🏻
+          </div>
+          <div>
+            <p className="text-gray-500 font-bold text-sm">สวัสดีตอนเที่ยง</p>
+            <h2 className="text-xl font-extrabold text-gray-800">คุณแม่สมศรี</h2>
+          </div>
+        </div>
+        <button onClick={() => setShowPinPad(true)} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95">
+          <Settings size={18} className="text-gray-400" />
+        </button>
+      </div>
+
+      {/* Card 1: Warning / Doctor */}
+      <div className="bg-orange-50 p-6 rounded-[2rem] shadow-sm border-2 border-orange-200">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-500 shrink-0">
+            <Activity size={28} />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800 text-lg">คุณแม่รู้สึกไม่สบาย?</h3>
+            <p className="text-orange-600 font-extrabold text-xl">ปรึกษาแพทย์ด่วน</p>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-2xl mb-5 border border-orange-100">
+          <div className="flex items-center gap-2 mb-2">
+            <Stethoscope className="text-blue-500" size={20} />
+            <span className="text-gray-800 font-bold">แอพ หมอดี (MorDee)</span>
+          </div>
+          <p className="text-xs text-gray-600 leading-relaxed font-medium">พบหมอออนไลน์ผ่านวิดีโอคอล พร้อมบริการจัดส่งยาถึงหน้าบ้าน สะดวก ไม่ต้องเดินทาง</p>
+        </div>
+        <button className="w-full bg-[#E85C33] text-white font-bold text-xl py-4 rounded-2xl shadow-sm hover:bg-[#D44A22] transition flex justify-center items-center gap-2">
+          <Stethoscope size={24} />
+          ปรึกษาแพทย์ตอนนี้
+        </button>
+      </div>
+
+      {/* Card 2: AI Companion */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-[2rem] shadow-sm border border-blue-100">
+        <div className="flex items-center gap-4 mb-5">
+          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-sm text-blue-500 shrink-0">
+            <Mic size={32} />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800 text-xl">เพื่อนคุย AI</h3>
+            <p className="text-gray-600 font-medium text-sm mt-0.5 leading-tight">กดเพื่อคุยเมื่อเหงา หรือไม่สบายใจ</p>
+          </div>
+        </div>
+        <button className="w-full bg-[#015DAD] text-white font-bold text-lg py-4 rounded-2xl shadow-sm hover:bg-[#014F95] transition flex justify-center items-center gap-2">
+          <PhoneCall size={24} />
+          โทรหาน้อง Care
+        </button>
+      </div>
+
+      {/* Card 3: Emergency */}
+      <div className="bg-red-50 p-6 rounded-[2rem] border-2 border-red-100 shadow-sm">
+         <div className="text-center mb-5">
+            <div className="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse shadow-inner">
+               <AlertTriangle size={40} />
+            </div>
+            <h3 className="font-extrabold text-red-600 text-2xl">ปุ่มฉุกเฉิน</h3>
+            <p className="text-red-500 font-bold text-sm mt-1">กดเมื่อต้องการความช่วยเหลือทันที</p>
+            <p className="text-xs text-red-400 mt-2 font-medium">*ระบบจะแจ้งเตือนผู้ดูแลทันที</p>
+         </div>
+         <button className="w-full bg-red-500 text-white font-bold text-xl py-5 rounded-2xl shadow-lg hover:bg-red-600 transition active:scale-95 flex justify-center items-center gap-2">
+           <AlertOctagon size={28} />
+           ขอความช่วยเหลือ
+         </button>
+      </div>
+    </div>
+  );
+};
+
+const NavItem = ({ icon, label, isActive, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`flex flex-col items-center justify-center w-14 sm:w-16 gap-1 transition-all duration-300 ${
+      isActive ? 'text-blue-600 scale-110' : 'text-gray-400 hover:text-gray-600'
+    }`}
+  >
+    <div className={`p-1 rounded-xl ${isActive ? 'bg-blue-50' : ''}`}>
+      {icon}
+    </div>
+    <span className={`text-[10px] font-medium whitespace-nowrap ${isActive ? 'font-bold' : ''}`}>
+      {label}
+    </span>
+  </button>
+);
+
+const InsightDetailView = ({ onBack }) => {
+  const [timeRange, setTimeRange] = useState('daily');
+
+  // ข้อมูลสมมติสำหรับการเปรียบเทียบวันนี้และเมื่อวาน
+  const todayStats = { mental: 75, physical: 80, sleep: 60 };
+  const yesterdayStats = { mental: 85, physical: 80, sleep: 65 };
+
+  // คำนวณหา Warning แบบอัตโนมัติหากค่าน้อยกว่าเมื่อวาน
+  const warnings = [];
+  if (todayStats.mental < yesterdayStats.mental) {
+    warnings.push({ title: 'สุขภาพใจลดลง', desc: 'อารมณ์ขุ่นมัวกว่าเมื่อวาน แนะนำให้ชวนคุยเรื่องที่ท่านชอบ หรือให้หลานวิดีโอคอลหาเย็นนี้' });
+  }
+  if (todayStats.physical < yesterdayStats.physical) {
+    warnings.push({ title: 'สุขภาพกายลดลง', desc: 'อาจมีอาการอ่อนเพลีย แนะนำให้สังเกตอาการอย่างใกล้ชิดและสอบถามเรื่องการทานยา' });
+  }
+  if (todayStats.sleep < yesterdayStats.sleep) {
+    warnings.push({ title: 'การนอนหลับลดลง', desc: 'เมื่อคืนหลับไม่สนิท แนะนำให้ลดแสงรบกวนในห้องนอน และงดเครื่องดื่มที่มีคาเฟอีนช่วงบ่าย' });
+  }
+
+  return (
+    <div className="p-5 space-y-4 animate-fade-in pb-10">
+      <div className="pt-2 flex items-center gap-3 mb-2">
+        <button onClick={onBack} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95">
+          <ChevronLeft size={20} className="text-gray-600" />
+        </button>
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">Dashboard</h2>
+        </div>
+      </div>
+
+      {/* Time Range Tabs (ย้ายมาไว้บนสุด) */}
+      <div className="flex bg-gray-200/50 p-1 rounded-xl">
+        <button 
+          onClick={() => setTimeRange('daily')}
+          className={`flex-1 text-xs font-bold py-2.5 rounded-lg transition-all ${timeRange === 'daily' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          รายวัน
+        </button>
+        <button 
+          onClick={() => setTimeRange('weekly')}
+          className={`flex-1 text-xs font-bold py-2.5 rounded-lg transition-all ${timeRange === 'weekly' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          รายสัปดาห์
+        </button>
+        <button 
+          onClick={() => setTimeRange('monthly')}
+          className={`flex-1 text-xs font-bold py-2.5 rounded-lg transition-all ${timeRange === 'monthly' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          รายเดือน
+        </button>
+      </div>
+
+      {/* --- Tab Content: Daily --- */}
+      {timeRange === 'daily' && (
+        <div className="space-y-4 animate-fade-in">
+          
+          {/* Call Summary Header (ปรับให้อยู่ใต้ Tab และลดช่องไฟ) */}
+          <div className="mt-2">
+            <h2 className="text-xl font-extrabold text-gray-800 flex items-center gap-2">
+              <PhoneCall size={22} className="text-blue-500" />
+              สรุปผลการโทร
+            </h2>
+            <p className="text-gray-500 text-xs mt-1 flex items-center gap-1">
+              วันนี้, 09:00 น. <span className="mx-1 text-gray-300">•</span> ระยะเวลา 5 นาที
+            </p>
+          </div>
+
+          {/* Today's Ring */}
+          <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+            <h3 className="text-sm font-bold text-gray-800 mb-4 text-center">ภาพรวมสุขภาพวันนี้</h3>
+            <div className="flex items-center justify-center gap-5">
+              <div className="w-24 h-24 shrink-0 relative">
+                <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 drop-shadow-sm">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#ffe4ec" strokeWidth="8" />
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#ff5487" strokeWidth="8" strokeDasharray="263.8" strokeDashoffset={263.8 * (1 - todayStats.mental/100)} strokeLinecap="round" />
+                  <circle cx="50" cy="50" r="30" fill="none" stroke="#d1fae5" strokeWidth="8" />
+                  <circle cx="50" cy="50" r="30" fill="none" stroke="#05d6a0" strokeWidth="8" strokeDasharray="188.4" strokeDashoffset={188.4 * (1 - todayStats.physical/100)} strokeLinecap="round" />
+                  <circle cx="50" cy="50" r="18" fill="none" stroke="#ede9fe" strokeWidth="8" />
+                  <circle cx="50" cy="50" r="18" fill="none" stroke="#8b5cf6" strokeWidth="8" strokeDasharray="113.1" strokeDashoffset={113.1 * (1 - todayStats.sleep/100)} strokeLinecap="round" />
+                </svg>
+              </div>
+              <div className="space-y-3 flex-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#ff5487] shadow-sm"></div>
+                    <span className="text-xs font-medium text-gray-600">สุขภาพใจ</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-800">{todayStats.mental}/100</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#05d6a0] shadow-sm"></div>
+                    <span className="text-xs font-medium text-gray-600">สุขภาพกาย</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-800">{todayStats.physical}/100</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#8b5cf6] shadow-sm"></div>
+                    <span className="text-xs font-medium text-gray-600">การนอนหลับ</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-800">{todayStats.sleep}/100</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Call Summary Box */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-3xl shadow-sm border border-blue-100">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles size={16} className="text-blue-500" />
+              <h3 className="font-bold text-gray-800 text-sm">AI สรุปผลการคุยสาย</h3>
+            </div>
+            <p className="text-xs text-gray-700 leading-relaxed">
+              "คุณแม่มีน้ำเสียงสดใสตอนรับสาย มีการถามถึงหลานบ่อยครั้ง แต่แอบบ่นว่าเมื่อคืนตื่นกลางดึกบ่อยทำให้รู้สึกเพลียและอารมณ์หงุดหงิดเล็กน้อยช่วงเช้า"
+            </p>
+          </div>
+
+          {/* Warnings & Care Recommendations (แสดงเฉพาะค่าที่ตก) */}
+          {warnings.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-bold text-gray-800 px-1 flex items-center gap-2">
+                <AlertTriangle size={16} className="text-orange-500" /> ข้อควรระวังและวิธีดูแล
+              </h3>
+              {warnings.map((warn, idx) => (
+                <div key={idx} className="bg-orange-50/50 p-3 rounded-2xl shadow-sm border border-orange-100 flex gap-3">
+                  <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5 shrink-0"></div>
+                  <div>
+                    <h4 className="font-bold text-orange-800 text-xs">{warn.title}</h4>
+                    <p className="text-[11px] text-orange-700 mt-0.5 leading-relaxed">{warn.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* General Care Recommendations */}
+          <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle2 size={16} className="text-green-500" />
+              <h3 className="font-bold text-gray-800 text-sm">คำแนะนำเพิ่มเติมจาก AI</h3>
+            </div>
+            <ul className="space-y-2">
+              <li className="flex items-start gap-2 text-xs text-gray-600">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1 shrink-0"></div>
+                แนะนำให้โทรหาหรือวิดีโอคอลเย็นนี้ เพื่อเสริมสร้างกำลังใจคุณแม่
+              </li>
+              <li className="flex items-start gap-2 text-xs text-gray-600">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1 shrink-0"></div>
+                สอบถามเรื่องทานยามื้อเที่ยง เนื่องจากอาจลืมได้เวลาที่ท่านมีอาการอ่อนเพลีย
+              </li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* --- Tab Content: Weekly --- */}
+      {timeRange === 'weekly' && (
+        <div className="space-y-4 animate-fade-in mt-4">
+          {/* Weekly Overview */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-800 mb-2 px-1">ภาพรวมรายสัปดาห์</h3>
+            <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <div className="flex justify-between items-end gap-2 min-w-max px-1">
+                {[
+                  { d: '12 พ.ค.', v1: 60, v2: 70, v3: 50 },
+                  { d: '13 พ.ค.', v1: 65, v2: 75, v3: 55 },
+                  { d: '14 พ.ค.', v1: 70, v2: 75, v3: 60 },
+                  { d: '15 พ.ค.', v1: 60, v2: 80, v3: 65 },
+                  { d: '16 พ.ค.', v1: 80, v2: 85, v3: 70 },
+                  { d: '17 พ.ค.', v1: 85, v2: 80, v3: 65 },
+                  { d: 'วันนี้', v1: 75, v2: 80, v3: 60, active: true },
+                ].map((day, i) => (
+                  <div key={i} className={`flex flex-col items-center gap-3 p-2 rounded-2xl transition-all ${day.active ? 'bg-blue-50 border border-blue-100 shadow-sm' : ''}`}>
+                    <span className={`text-[10px] font-bold whitespace-nowrap ${day.active ? 'text-blue-600' : 'text-gray-400'}`}>{day.d}</span>
+                    <div className="w-10 h-10 relative">
+                      <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 drop-shadow-sm">
+                        {/* Outer Ring (Pink) */}
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#ffe4ec" strokeWidth="10" />
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#ff5487" strokeWidth="10" strokeDasharray="263.8" strokeDashoffset={263.8 * (1 - day.v1/100)} strokeLinecap="round" />
+                        
+                        {/* Middle Ring (Green) */}
+                        <circle cx="50" cy="50" r="28" fill="none" stroke="#d1fae5" strokeWidth="10" />
+                        <circle cx="50" cy="50" r="28" fill="none" stroke="#05d6a0" strokeWidth="10" strokeDasharray="175.9" strokeDashoffset={175.9 * (1 - day.v2/100)} strokeLinecap="round" />
+                        
+                        {/* Inner Ring (Purple) */}
+                        <circle cx="50" cy="50" r="14" fill="none" stroke="#ede9fe" strokeWidth="10" />
+                        <circle cx="50" cy="50" r="14" fill="none" stroke="#8b5cf6" strokeWidth="10" strokeDasharray="87.9" strokeDashoffset={87.9 * (1 - day.v3/100)} strokeLinecap="round" />
+                      </svg>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Tab Content: Monthly --- */}
+      {timeRange === 'monthly' && (
+        <div className="space-y-4 animate-fade-in mt-4">
+          <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 text-center py-10">
+            <Calendar size={36} className="mx-auto text-gray-300 mb-3" />
+            <h3 className="text-sm font-bold text-gray-800">ภาพรวมรายเดือน</h3>
+            <p className="text-xs text-gray-500 mt-2 leading-relaxed">กำลังรวบรวมและประมวลผลข้อมูล<br/>ประจำเดือนนี้ของคุณแม่...</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const NotificationsView = () => (
+  <div className="p-5 space-y-4 animate-fade-in pb-10">
+    <div className="pt-4 mb-2">
+      <h2 className="text-2xl font-bold text-gray-800">การแจ้งเตือน</h2>
+    </div>
+    
+    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex gap-4 items-start cursor-pointer hover:bg-gray-50 transition">
+      <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
+        <Sparkles size={20} />
+      </div>
+      <div>
+        <h4 className="font-bold text-gray-800 text-sm">AI Insight Analysis</h4>
+        <p className="text-xs text-gray-500 mt-1 leading-relaxed">วิเคราะห์เสียงวันนี้พบว่าสดใสขึ้น 15% แนะนำให้โทรหาเย็นนี้</p>
+        <p className="text-[10px] text-gray-400 mt-2 font-medium">2 ชั่วโมงที่แล้ว</p>
+      </div>
+    </div>
+
+    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex gap-4 items-start opacity-70 cursor-pointer hover:bg-gray-50 transition">
+      <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-500 shrink-0">
+        <CheckCircle2 size={20} />
+      </div>
+      <div>
+        <h4 className="font-bold text-gray-800 text-sm">ทานยาครบ</h4>
+        <p className="text-xs text-gray-500 mt-1 leading-relaxed">คุณแม่ยืนยันการทานยาหลังอาหารเช้าเรียบร้อยแล้ว</p>
+        <p className="text-[10px] text-gray-400 mt-2 font-medium">เมื่อวาน, 09:15 น.</p>
+      </div>
+    </div>
+  </div>
+);
+
+const NutritionView = ({ onBack }) => {
+  const meals = [
+    {
+      name: 'ข้าวต้มปลาเนื้อนุ่ม',
+      tag: 'ย่อยง่าย',
+      desc: 'เหมาะกับมื้อเช้า โปรตีนดี เคี้ยวง่าย อิ่มสบายท้อง',
+      kcal: '320 kcal',
+      icon: Fish,
+      badge: 'แนะนำวันนี้',
+    },
+    {
+      name: 'แกงจืดเต้าหู้หมูสับผักกาดขาว',
+      tag: 'ลดเค็มได้',
+      desc: 'เมนูไทยคุ้นเคย น้ำซุปอ่อน ๆ ปรับโซเดียมตามโรคได้',
+      kcal: '280 kcal',
+      icon: Soup,
+      badge: 'ทานง่าย',
+    },
+    {
+      name: 'ปลานึ่งซีอิ๊วสูตรโซเดียมต่ำ',
+      tag: 'โปรตีนสูง',
+      desc: 'เนื้อปลานุ่ม ช่วยเสริมกล้ามเนื้อ เหมาะกับผู้สูงอายุ',
+      kcal: '360 kcal',
+      icon: Fish,
+      badge: 'สุขภาพหัวใจ',
+    }
+  ];
+
+  return (
+    <div className="p-5 space-y-6 animate-fade-in pb-10 bg-slate-50 min-h-full">
+      <div className="pt-2 flex items-center gap-3 mb-6">
+        <button onClick={onBack} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95">
+          <ChevronLeft size={20} className="text-gray-600" />
+        </button>
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">โภชนาการแนะนำ</h2>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-3xl p-5 shadow-sm border border-blue-100 relative overflow-hidden">
+         <div className="absolute -right-4 -top-4 w-24 h-24 bg-[#015DAD]/5 rounded-full pointer-events-none"></div>
+
+         <div className="flex items-center gap-2 mb-4 relative z-10">
+           <HeartPulse className="text-[#23A45F]" size={22} />
+           <h3 className="font-bold text-stone-800 text-lg">วิเคราะห์สำหรับคุณแม่</h3>
+         </div>
+         <div className="flex flex-wrap gap-2 relative z-10">
+           <span className="flex items-center gap-1 text-[11px] bg-[#015DAD]/10 text-[#015DAD] px-3 py-1.5 rounded-full font-bold">
+             <ShieldCheck size={14} /> ความดันโลหิตสูง
+           </span>
+           <span className="flex items-center gap-1 text-[11px] bg-[#015DAD]/10 text-[#015DAD] px-3 py-1.5 rounded-full font-bold">
+             <ShieldCheck size={14} /> เบาหวาน
+           </span>
+         </div>
+         <p className="text-xs text-stone-600 mt-4 leading-relaxed relative z-10 font-medium">
+           "AI แนะนำเมนูโซเดียมต่ำและควบคุมน้ำตาล เน้นโปรตีนย่อยง่ายจากปลาและเต้าหู้ เพื่อรักษาระดับน้ำตาลในเลือดให้คงที่"
+         </p>
+      </div>
+
+      <div>
+         <h3 className="text-sm font-bold text-gray-500 mb-3 px-1 uppercase tracking-widest">เมนูแนะนำวันนี้</h3>
+         <div className="space-y-4">
+           {meals.map((meal, index) => (
+             <div key={index} className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex gap-4 relative overflow-hidden group cursor-pointer hover:border-[#23A45F]/40 transition-colors">
+               {meal.badge && (
+                 <div className="absolute top-0 right-0 bg-gradient-to-r from-[#23A45F] to-[#015DAD] text-white text-[9px] font-bold px-3 py-1 rounded-bl-xl z-10 shadow-sm flex items-center gap-1">
+                   <Sparkles size={10} /> {meal.badge}
+                 </div>
+               )}
+               <div className="w-16 h-16 rounded-2xl bg-[#23A45F]/10 flex items-center justify-center shrink-0 border border-[#23A45F]/20 group-hover:scale-105 transition-transform">
+                 <meal.icon size={28} className="text-[#23A45F]" strokeWidth={1.5} />
+               </div>
+               <div className="flex-1 pt-1">
+                 <h4 className="font-bold text-gray-800 text-sm leading-tight pr-12">{meal.name}</h4>
+                 <p className="text-[11px] text-gray-500 mt-1 leading-relaxed line-clamp-2">{meal.desc}</p>
+                 
+                 <div className="flex items-center justify-between mt-3">
+                   <span className="text-[10px] font-bold bg-gray-50 text-gray-600 px-2.5 py-1 rounded-full border border-gray-100">{meal.tag}</span>
+                   <span className="text-[10px] font-bold text-[#015DAD] bg-[#015DAD]/10 px-2 py-1 rounded-lg">{meal.kcal}</span>
+                 </div>
+               </div>
+             </div>
+           ))}
+         </div>
+      </div>
+
+      <div className="mt-2 rounded-3xl bg-gradient-to-r from-blue-50 to-green-50 border border-blue-100 p-5 flex items-center gap-4 cursor-pointer hover:shadow-md transition">
+        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm shrink-0">
+          <ShoppingBag className="text-[#015DAD]" size={24} />
+        </div>
+        <div className="flex-1">
+          <h4 className="font-bold text-gray-800 text-sm">สั่งวัตถุดิบ/อาหารพร้อมทาน</h4>
+          <p className="text-[10px] text-gray-500 mt-1">แนะนำสินค้าสุขภาพส่งตรงถึงบ้าน</p>
+        </div>
+        <ChevronRight className="text-[#23A45F]" size={20} />
+      </div>
+    </div>
+  );
+};
+
+// --- New Medication Settings Component ---
+const MedicationSettingsView = ({ onBack }) => {
+  return (
+    <div className="p-5 space-y-6 animate-fade-in pb-10 bg-slate-50 min-h-full">
+      {/* Header */}
+      <div className="pt-2 flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95">
+            <ChevronLeft size={20} className="text-gray-600" />
+          </button>
+          <h2 className="text-2xl font-bold text-gray-800 tracking-tight">การทานยา</h2>
+        </div>
+        <button className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shadow-sm border border-blue-100 hover:bg-blue-100 transition active:scale-95">
+          <Plus size={20} />
+        </button>
+      </div>
+
+      {/* Date Strip Mockup */}
+      <div className="flex justify-between items-center bg-white px-4 py-3 rounded-2xl shadow-sm border border-gray-100">
+        {['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map((day, i) => (
+          <div key={i} className={`flex flex-col items-center gap-1.5 ${i === 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+            <span className="text-[10px] font-medium">{day}</span>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${i === 2 ? 'bg-blue-600 text-white shadow-md' : ''}`}>
+              {17 + i}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Today's Schedule List */}
+      <div>
+        <h3 className="text-lg font-bold text-gray-800 mb-4 px-1">กำหนดการวันนี้</h3>
+        
+        {/* Morning Section */}
+        <div className="mb-6">
+          <h4 className="text-sm font-bold text-gray-500 mb-3 px-2 flex items-center gap-2">
+            มื้อเช้า <span className="text-xs font-medium bg-gray-200 px-2 py-0.5 rounded-full text-gray-600">08:00 น.</span>
+          </h4>
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-50">
+            
+            {/* Med 1: Taken */}
+            <div className="p-4 flex items-center gap-4 hover:bg-gray-50 transition cursor-pointer">
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200">
+                <Pill size={24} className="text-blue-500" />
+              </div>
+              <div className="flex-1">
+                <h5 className="font-bold text-gray-800 text-base">Amlodipine</h5>
+                <p className="text-xs text-gray-500 mt-0.5">5 mg • 1 เม็ด</p>
+              </div>
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-500 text-white shadow-sm">
+                <Check size={18} strokeWidth={3} />
+              </div>
+            </div>
+
+            {/* Med 2: Taken */}
+            <div className="p-4 flex items-center gap-4 hover:bg-gray-50 transition cursor-pointer">
+              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center shrink-0 border border-orange-200">
+                <Pill size={24} className="text-orange-500" />
+              </div>
+              <div className="flex-1">
+                <h5 className="font-bold text-gray-800 text-base">Metformin</h5>
+                <p className="text-xs text-gray-500 mt-0.5">500 mg • 1 เม็ด</p>
+              </div>
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-500 text-white shadow-sm">
+                <Check size={18} strokeWidth={3} />
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Noon Section */}
+        <div>
+          <h4 className="text-sm font-bold text-gray-500 mb-3 px-2 flex items-center gap-2">
+            มื้อเที่ยง <span className="text-xs font-medium bg-gray-200 px-2 py-0.5 rounded-full text-gray-600">12:30 น.</span>
+          </h4>
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-50">
+            
+            {/* Med 3: Upcoming */}
+            <div className="p-4 flex items-center gap-4 hover:bg-gray-50 transition cursor-pointer">
+              <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center shrink-0 border border-yellow-200">
+                <Pill size={24} className="text-yellow-500" />
+              </div>
+              <div className="flex-1">
+                <h5 className="font-bold text-gray-800 text-base">Vitamin C</h5>
+                <p className="text-xs text-gray-500 mt-0.5">1000 mg • 1 เม็ด</p>
+              </div>
+              <button className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-gray-200 transition">
+                บันทึก
+              </button>
+            </div>
+
+            {/* Med 4: Upcoming */}
+            <div className="p-4 flex items-center gap-4 hover:bg-gray-50 transition cursor-pointer">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0 border border-green-200">
+                <Pill size={24} className="text-green-500" />
+              </div>
+              <div className="flex-1">
+                <h5 className="font-bold text-gray-800 text-base">Calcium</h5>
+                <p className="text-xs text-gray-500 mt-0.5">600 mg • 1 เม็ด</p>
+              </div>
+              <button className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-gray-200 transition">
+                บันทึก
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* Settings / All Medications List */}
+      <div className="pt-4">
+        <h3 className="text-lg font-bold text-gray-800 mb-4 px-1">ยาทั้งหมดของคุณ</h3>
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-50">
+          
+          <div className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                <Pill size={20} className="text-blue-500" />
+              </div>
+              <div>
+                <h5 className="font-bold text-gray-800 text-sm">Amlodipine</h5>
+                <p className="text-xs text-gray-500 mt-0.5">ทุกวัน, มื้อเช้า</p>
+              </div>
+            </div>
+            <ChevronRight size={18} className="text-gray-300" />
+          </div>
+
+          <div className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                <Pill size={20} className="text-orange-500" />
+              </div>
+              <div>
+                <h5 className="font-bold text-gray-800 text-sm">Metformin</h5>
+                <p className="text-xs text-gray-500 mt-0.5">ทุกวัน, มื้อเช้าและเย็น</p>
+              </div>
+            </div>
+            <ChevronRight size={18} className="text-gray-300" />
+          </div>
+
+          <div className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
+                <Pill size={20} className="text-yellow-500" />
+              </div>
+              <div>
+                <h5 className="font-bold text-gray-800 text-sm">Vitamin C</h5>
+                <p className="text-xs text-gray-500 mt-0.5">ทุกวัน, มื้อเที่ยง</p>
+              </div>
+            </div>
+            <ChevronRight size={18} className="text-gray-300" />
+          </div>
+
+        </div>
+        
+        <div className="mt-4 px-2">
+           <p className="text-xs text-gray-400 flex items-start gap-1.5 leading-relaxed">
+             <Info size={14} className="shrink-0 mt-0.5" />
+             หากมีการปรับเปลี่ยนยาโดยแพทย์ กรุณากดปุ่มเครื่องหมายบวก (+) ด้านบนเพื่อเพิ่มหรือแก้ไขรายการยาของคุณ
+           </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- New Manage Elders Component ---
+const ManageEldersView = ({ onBack }) => (
+  <div className="p-5 space-y-6 animate-fade-in pb-10 bg-slate-50 min-h-full">
+    <div className="pt-2 flex items-center gap-3 mb-6">
+      <button onClick={onBack} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 hover:bg-gray-50 transition active:scale-95">
+        <ChevronLeft size={20} className="text-gray-600" />
+      </button>
+      <div>
+        <h2 className="text-xl font-bold text-gray-800">ผู้สูงอายุที่ดูแล</h2>
+        <p className="text-xs text-gray-500 mt-0.5">จัดการบัญชีผู้สูงอายุในความดูแลของคุณ</p>
+      </div>
+    </div>
+
+    <div className="space-y-4">
+      {/* Active Elder */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border-2 border-blue-500 relative overflow-hidden flex items-center gap-4 cursor-pointer">
+        <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
+          กำลังดูแล
+        </div>
+        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-3xl shadow-inner border border-blue-100 shrink-0">
+          👵🏻
+        </div>
+        <div className="flex-1">
+          <h3 className="font-bold text-gray-800 text-lg">คุณแม่สมศรี</h3>
+          <p className="text-xs text-gray-500 mt-0.5">อายุ 72 ปี</p>
+          <div className="flex gap-1 mt-2">
+            <span className="text-[9px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">ความดันโลหิตสูง</span>
+            <span className="text-[9px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">เบาหวาน</span>
+          </div>
+        </div>
+        <CheckCircle2 className="text-blue-500" size={24} />
+      </div>
+
+      {/* Add New Elder */}
+      <button className="w-full bg-white p-5 rounded-2xl shadow-sm border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition flex flex-col items-center justify-center gap-2 text-gray-500 hover:text-blue-600 min-h-[120px]">
+        <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center shadow-sm">
+          <Plus size={24} />
+        </div>
+        <span className="font-bold text-sm">เพิ่มผู้สูงอายุ</span>
+      </button>
+    </div>
+  </div>
+);
+
+export default App;
+
+        // 5. คำสั่งเพื่อเรนเดอร์ App แสดงบนหน้าจอเว็บ
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
